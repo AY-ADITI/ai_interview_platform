@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// /* eslint-disable @typescript-eslint/no-unused-vars */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use server";
 
 // import { auth, db } from "@/firebase/admin";
@@ -51,8 +51,7 @@
 //       success: true,
 //       message: "Account created successfully. Please sign in.",
 //     };
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   } catch (error: any) {
+//   } catch (error:any) {
 //     console.error("Error creating user:", error);
 
 //     // Handle Firebase specific errors
@@ -82,7 +81,6 @@
 //       };
 
 //     await setSessionCookie(idToken);
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 //   } catch (error: any) {
 //     console.log("");
 
@@ -135,6 +133,9 @@
 //   return !!user;
 // }
 
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { auth, db } from "@/firebase/admin";
@@ -166,7 +167,7 @@ export async function signUp(params: SignUpParams) {
   const { uid, name, email } = params;
 
   try {
-    // check if user exists in db
+    // Check if user exists in db
     const userRecord = await db.collection("users").doc(uid).get();
     if (userRecord.exists)
       return {
@@ -174,7 +175,7 @@ export async function signUp(params: SignUpParams) {
         message: "User already exists. Please sign in.",
       };
 
-    // save user to db
+    // Save user to db
     await db.collection("users").doc(uid).set({
       name,
       email,
@@ -208,17 +209,33 @@ export async function signIn(params: SignInParams) {
   const { email, idToken } = params;
 
   try {
+    // Verify user exists in Firebase Auth
     const userRecord = await auth.getUserByEmail(email);
-    if (!userRecord)
+    if (!userRecord) {
       return {
         success: false,
         message: "User does not exist. Create an account.",
       };
+    }
 
+    // Check if user exists in Firestore; if not, create a basic entry
+    const userDocRef = db.collection("users").doc(userRecord.uid);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) {
+      // Create a minimal user document (adjust fields as needed)
+      await userDocRef.set({
+        name: userRecord.displayName || "Unknown", // Fallback if no display name
+        email: userRecord.email,
+        // Add other defaults if necessary (e.g., profileURL: null)
+      });
+    }
+
+    // Set session cookie
     await setSessionCookie(idToken);
-  } catch (error: any) {
-    console.log("");
 
+    return { success: true };
+  } catch (error: any) {
+    console.error("Sign-in error:", error);
     return {
       success: false,
       message: "Failed to log into account. Please try again.",
@@ -243,7 +260,7 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 
-    // get user info from db
+    // Get user info from db
     const userRecord = await db
       .collection("users")
       .doc(decodedClaims.uid)

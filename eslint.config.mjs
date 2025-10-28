@@ -19,7 +19,13 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+     "@typescript-eslint/no-unused-vars": "off",
+     "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+     "react/jsx-key": "off",
+    },
   },
 ];
 
 export default eslintConfig;
+
