@@ -347,12 +347,12 @@ const InterviewCard = ({
     setLoading(true);
     try {
       const res = await fetch(
-        "https://ai-mock-interviews-lemon.vercel.app/api/vapi/generate",
+        "https://ai-interview-platform-ivory-six.vercel.app/api/vapi/generate",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer  ${process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN}`",
+            Authorization: `Bearer  ${process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN}`,
           },
           body: JSON.stringify({
             role,
